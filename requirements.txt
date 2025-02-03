@@ -1,0 +1,5 @@
+@huggingface/inference@^3.1.5
+@types/node@^18.0.6
+axios@^1.7.9
+dotenv@^16.4.7
+express@^4.21.2
