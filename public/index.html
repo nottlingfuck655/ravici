@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Saba's AI Thingy</title>
+  <title>Generator</title>
   <style>
     * {
       margin: 0;
@@ -12,80 +12,204 @@
       font-family: system-ui, -apple-system, sans-serif;
     }
 
+    html {
+      overflow: hidden;
+      height: 100%;
+    }
+
     body {
       min-height: 100vh;
-      background: #111;
-      padding: 2rem;
-      color: #fff;
-      position: relative;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    .header h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .header p {
-      color: #aaa;
-      font-size: 1.1rem;
-    }
-
-    .card {
-      background: #222;
-      padding: 2rem;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-      border-radius: 8px;
+      background: #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
       overflow: hidden;
+      height: 100%;
+    }
+
+    .main-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 512px;
+      margin: auto;
+    }
+
+    .image-container {
+      width: 100%;
+      aspect-ratio: 1/1;
+      background: #222;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      position: relative;
+      max-height: 70vh;
+      overflow: hidden; /* Ensure image animation stays within container */
     }
 
     .input-group {
       position: relative;
-      margin-bottom: 1.5rem;
+      width: 100%;
+      margin-top: 0.5rem;
     }
 
     .input-group input {
       width: 100%;
       padding: 1.2rem;
       border: 2px solid #333;
-      border-radius: 8px;
+      border-radius: 50px;
       font-size: 1rem;
       background: #333;
       color: #fff;
+      padding-right: 60px;
+      transition: border-color 0.5s ease; /* Input focus animation - SLOWER */
     }
 
     .input-group input:focus {
-      outline: none;
       border-color: #555;
+      outline: none;
+    }
+
+    .input-group input::placeholder {
+      color: #ccc;
+      transition: color 0.5s ease; /* Placeholder fade animation - SLOWER */
+    }
+
+    .input-group input:focus::placeholder {
+      color: #888;
+    }
+
+    .generate-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      background: #fff;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease, background-color 0.3s ease; /* Button hover animation - SLOWER */
+    }
+
+    .generate-btn:hover {
+      transform: translateY(-50%) scale(1.1);
+      background-color: #eee;
+    }
+
+    .generate-btn:active {
+      transform: translateY(-48%) scale(0.95);
+      background-color: #ddd;
+    }
+
+    .generate-btn::after {
+      content: '↑';
+      font-size: 1.2rem;
+      color: #000;
+      transition: color 0.3s ease; /* Arrow color transition - SLOWER */
+    }
+
+    .generate-btn:hover::after {
+      color: #222;
+    }
+
+    .settings-btn {
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      padding: 0.8rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      margin-left: 0;
+      transition: background 0.3s ease, transform 0.3s ease; /* Button hover animation - SLOWER */
+    }
+
+    .settings-btn:hover {
+      background: #444;
+      transform: scale(1.05);
+    }
+
+    .settings-btn:active {
+      transform: scale(0.98);
+    }
+
+    .settings-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      transition: stroke 0.3s ease; /* SVG color transition - SLOWER */
+    }
+
+    .settings-btn:hover svg {
+      stroke: #ddd;
+    }
+
+    .settings-menu {
+      display: none;
+      position: absolute;
+      bottom: 60px;
+      left: 0;
+      background: #333;
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 300px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      z-index: 100;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.5s ease, transform 0.5s ease; /* Settings menu slide down animation - SLOWER */
+    }
+
+    .settings-menu.visible {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .settings-menu h3 {
+      color: #fff;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
     }
 
     .slider-container {
-      margin: 1.5rem 0;
+      margin: 1rem 0;
     }
 
     .slider-container label {
       display: block;
+      color: #ccc;
       margin-bottom: 0.5rem;
-      font-weight: 500;
-      color: #fff;
+      font-size: 0.9rem;
     }
 
     #guidanceScale {
       width: 100%;
       height: 4px;
-      background: #333;
+      background: #555;
       border-radius: 2px;
       outline: none;
       -webkit-appearance: none;
+      transition: background-color 0.5s ease; /* Slider active state animation - SLOWER */
+    }
+
+    #guidanceScale:focus {
+      background-color: #666;
     }
 
     #guidanceScale::-webkit-slider-thumb {
@@ -95,35 +219,144 @@
       background: #fff;
       border-radius: 50%;
       cursor: pointer;
+      transition: transform 0.3s ease, background-color 0.3s ease; /* Slider thumb animation - SLOWER */
     }
 
-    .generate-btn {
+    #guidanceScale::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      background-color: #eee;
+    }
+
+    #guidanceScale::-webkit-slider-thumb:active {
+      transform: scale(1.1);
+      background-color: #ddd;
+    }
+
+
+    .guidance-value {
+      color: #fff;
+      font-size: 0.9rem;
+      text-align: right;
+      margin-top: 0.5rem;
+      opacity: 0.8;
+      transition: opacity 0.5s ease; /* Guidance value fade animation - SLOWER */
+    }
+
+    .slider-container:hover .guidance-value {
+      opacity: 1;
+    }
+
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 99;
+      background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+      opacity: 0;
+      transition: opacity 0.5s ease; /* Overlay fade animation - SLOWER */
+    }
+
+    .overlay.visible {
+      display: block;
+      opacity: 1;
+    }
+
+
+    .image-container img {
       width: 100%;
-      padding: 1.2rem;
-      background: #333;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.7s ease; /* Image fade-in animation - SLOWER */
     }
 
-    .generate-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .image-container img.visible {
+      display: block;
+      opacity: 1;
+    }
+
+    .image-placeholder {
+      text-align: center;
+      padding: 2rem;
+      opacity: 0.7;
+      transition: opacity 0.5s ease; /* Placeholder fade animation - SLOWER */
+    }
+
+    .image-container:hover .image-placeholder {
+      opacity: 0.9;
+    }
+
+    .image-info {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(40, 40, 40, 0.9);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      color: #ccc;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      transition: opacity 0.5s ease; /* Image info fade out animation - SLOWER */
+      animation: fadeOut 0.5s ease 5s forwards;
+      border: 1px solid #444;
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
     }
 
     .loading {
       display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       text-align: center;
-      margin: 2rem 0;
       color: #fff;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      opacity: 0;
+      transition: opacity 0.5s ease; /* Loading animation fade in/out - SLOWER */
     }
+
+    .loading.visible {
+      display: flex; /* Override display: none when visible */
+      opacity: 1;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #666;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #timer {
+      font-size: 0.9rem;
+      color: #ccc;
+      opacity: 0.7;
+      transition: opacity 0.5s ease; /* Timer fade animation - SLOWER */
+    }
+
+    .loading.visible #timer {
+      opacity: 1;
+    }
+
 
     .error {
       display: none;
@@ -131,128 +364,174 @@
       background: #622;
       border-radius: 8px;
       color: #fff;
-      margin: 1rem 0;
-    }
-
-    .image-container {
-      margin-top: 2rem;
-    }
-
-    .image-container img {
-      width: 100%;
-      max-width: 512px;
-      display: block;
-      margin: 0 auto;
-    }
-
-    .image-info {
+      position: fixed;
+      top: -100px; /* Start off screen */
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 90%;
+      width: max-content;
+      word-wrap: break-word;
+      z-index: 1000;
       text-align: center;
-      margin-top: 1rem;
+      opacity: 0;
+      transition: top 0.6s ease, opacity 0.6s ease; /* Error slide down/fade in animation - SLOWER */
+    }
+
+    .error.visible {
+      display: block; /* Override display: none when visible */
+      top: 20px; /* Slide into view */
+      opacity: 1;
+    }
+
+
+.footer {
+  width: 100%;
+  text-align: center;
+  color: #666;
+  font-size: 0.8rem;
+  padding: 1rem 0;
+  margin-top: auto; /* Pushes footer to bottom of main-container */
+  opacity: 0.7;
+  transition: opacity 0.5s ease;
+}
+
+    .footer:hover {
+      opacity: 1;
+    }
+
+    .footer a {
+      color: #888;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer a:hover {
       color: #aaa;
     }
 
-    .profile-pic-container {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px; /* Adds some space between the images and the main content */
-      justify-content: center; /* Center the images */
-      flex-wrap: wrap; /* Ensure the images wrap on smaller screens */
-    }
-
-    .profile-pic-container img {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      object-fit: cover;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-      cursor: pointer;
-    }
-
-    /* Media query for smaller screens */
-    @media (max-width: 768px) {
+    @media (max-width: 600px) {
       body {
+        padding: 15px;
+      }
+
+      .main-container {
+        gap: 1rem;
+      }
+
+      .input-group input {
         padding: 1rem;
+        font-size: 0.9rem;
       }
 
-      .header h1 {
-        font-size: 2rem;
+      .generate-btn {
+        width: 35px;
+        height: 35px;
       }
 
-      .card {
-        padding: 1.5rem;
+      .generate-btn::after {
+        font-size: 1rem;
       }
 
-      .profile-pic-container {
-        justify-content: flex-start; /* Align images to the left on small screens */
-        margin-top: 1rem; /* Reduce the top margin */
+      .settings-btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
       }
 
-      .profile-pic-container img {
-        width: 50px; /* Reduce the size of images on smaller screens */
-        height: 50px;
+      .settings-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .error {
+        font-size: 0.9rem;
+        padding: 0.8rem;
+        max-width: 80%;
+      }
+
+      .footer {
+        font-size: 0.7rem;
+        bottom: 15px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>სიურრეალიზმი</h1>
-      <p>შექმნილია საბას და სემის მიერ</p>
-    </div>
-
-    <div class="card">
-      <div class="input-group">
-        <input
-          type="text"
-          id="promptInput"
-          placeholder="ჩაწერე რამე..."
-          onkeypress="if(event.key === 'Enter') generateImage()"
-        >
-      </div>
-
-      <div class="slider-container">
-        <label for="guidanceScale">
-          კონტროლის დონე: <span id="guidanceValue">7</span>
-        </label>
-        <input
-          type="range"
-          id="guidanceScale"
-          min="1"
-          max="10"
-          step="0.1"
-          value="7"
-          oninput="document.getElementById('guidanceValue').textContent = this.value"
-        >
-      </div>
-
-      <button class="generate-btn" onclick="generateImage()" id="generateBtn">
-        შექმენი
-      </button>
-
+  <div class="main-container">
+    <div class="image-container" id="imageContainer">
+      <div class="image-placeholder">:3</div>
       <div class="loading" id="loading">
-         იქმნება... <span id="timer">0s</span>
+        <div class="spinner"></div>
+        <span id="timer">0s</span>
       </div>
+    </div>
 
-      <div class="error" id="error"></div>
+    <div class="input-group">
+      <input
+        type="text"
+        id="promptInput"
+        placeholder="ჩაწერე რამე..."
+        onkeypress="if(event.key === 'Enter') generateImage()"
+      >
+      <button class="generate-btn" onclick="generateImage()"></button>
+    </div>
 
-      <div id="imageContainer" class="image-container"></div>
+    <div class="settings-container">
+      <button class="settings-btn" onclick="toggleSettings()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        პარამეტრები
+      </button>
+      <div class="settings-menu" id="settingsMenu">
+        <h3>პარამეტრები</h3>
+        <div class="slider-container">
+          <label for="guidanceScale">კონტროლის დონე:</label>
+          <input
+            type="range"
+            id="guidanceScale"
+            min="1"
+            max="10"
+            step="0.1"
+            value="7"
+            oninput="updateGuidanceValue(this.value)"
+          >
+          <div class="guidance-value" id="guidanceValue">7</div>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="profile-pic-container">
-    <a href="https://www.facebook.com/share/19zVgiGtgn/?mibextid=wwXIfr" target="_blank">
-      <img src="saba.jpeg" alt="Saba's profile picture">
-    </a>
-    <a href="https://youtu.be/2yJgwwDcgV8?feature=shared" target="_blank">
-      <img src="sam.jpeg" alt="Sam's profile picture">
+  <div class="footer">
+    <a href="https://www.facebook.com/share/1BhS4Trdqz/?mibextid=wwXIfr" target="_blank">
+      Made by Saba <3
     </a>
   </div>
+
+  <div class="error" id="error"></div>
+  <div class="overlay" id="overlay" onclick="closeSettings()"></div>
 
   <script>
     let lastGenerationTime = 0;
     let timerInterval;
     let startTime;
+    let guidanceScale = 7;
+
+    function toggleSettings() {
+      const menu = document.getElementById('settingsMenu');
+      const overlay = document.getElementById('overlay');
+      menu.classList.toggle('visible');
+      overlay.classList.toggle('visible'); // Add 'visible' class to overlay
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsMenu').classList.remove('visible');
+      document.getElementById('overlay').classList.remove('visible'); // Remove 'visible' class from overlay
+    }
+
+    function updateGuidanceValue(value) {
+      guidanceScale = parseFloat(value);
+      document.getElementById('guidanceValue').textContent = value;
+    }
 
     async function generateImage() {
       const now = Date.now();
@@ -269,7 +548,7 @@
       const loading = document.getElementById('loading');
       const error = document.getElementById('error');
       const imageContainer = document.getElementById('imageContainer');
-      const generateBtn = document.getElementById('generateBtn');
+      const generateBtn = document.querySelector('.generate-btn');
 
       if (!promptInput.value.trim()) {
         showError('რამე ჩაწერე ');
@@ -278,27 +557,28 @@
 
       const formattedPrompt = `((surrealism)), ${promptInput.value}, surreal`;
 
-      loading.style.display = 'block';
-      error.style.display = 'none';
-      imageContainer.innerHTML = '';
+      loading.classList.add('visible'); // Add 'visible' class to loading
+      error.classList.remove('visible'); // Ensure error is hidden
+      imageContainer.querySelector('.image-placeholder').style.display = 'none';
+      imageContainer.querySelector('img')?.remove();
+      imageContainer.querySelector('.image-info')?.remove();
       generateBtn.disabled = true;
       startTime = Date.now();
 
       let seconds = 0;
+      document.getElementById('timer').textContent = `0s`;
       timerInterval = setInterval(() => {
         seconds++;
         document.getElementById('timer').textContent = `${seconds}s`;
       }, 1000);
 
       try {
-        const guidanceScale = parseFloat(document.getElementById('guidanceScale').value);
-
         const response = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             prompt: formattedPrompt,
-            guidanceScale: guidanceScale,
+            guidanceScale: guidanceScale
           }),
         });
 
@@ -307,12 +587,24 @@
         if (data.images && data.images.length > 0) {
           const generationTime = ((Date.now() - startTime) / 1000).toFixed(1);
 
-          imageContainer.innerHTML = `
-            <img src="${data.images[0]}" alt="${formattedPrompt}">
-            <div class="image-info">
-              <p>დასჭირდა: ${generationTime}s</p>
-            </div>
-          `;
+          const img = new Image();
+          img.src = data.images[0];
+          img.alt = formattedPrompt;
+          img.onload = () => { // Add onload event to trigger image fade-in
+            img.classList.add('visible');
+          };
+
+
+          const infoDiv = document.createElement('div');
+          infoDiv.className = 'image-info';
+          infoDiv.textContent = `დასჭირდა: ${generationTime}s`;
+
+          imageContainer.appendChild(img);
+          imageContainer.appendChild(infoDiv);
+
+          setTimeout(() => {
+            infoDiv.remove();
+          }, 5500);
 
           lastGenerationTime = Date.now();
         } else {
@@ -320,8 +612,9 @@
         }
       } catch (err) {
         showError('შექდომა: ' + err.message);
+        imageContainer.querySelector('.image-placeholder').style.display = 'block';
       } finally {
-        loading.style.display = 'none';
+        loading.classList.remove('visible'); // Remove 'visible' class from loading
         generateBtn.disabled = false;
         clearInterval(timerInterval);
       }
@@ -330,7 +623,8 @@
     function showError(message) {
       const error = document.getElementById('error');
       error.textContent = message;
-      error.style.display = 'block';
+      error.classList.add('visible'); // Add 'visible' class to error to show it
+      setTimeout(() => error.classList.remove('visible'), 3000); // Remove 'visible' class to hide it
     }
   </script>
 </body>
