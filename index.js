@@ -13,14 +13,14 @@ app.post('/api/generate', async (req, res) => {
     const { prompt, guidanceScale } = req.body;
 
     const parameters = { 
-      num_inference_steps: 40,
+      num_inference_steps: 20,
       guidance_scale: guidanceScale,
       negative_prompt: "low quality, blurry",
       seed: Math.floor(Math.random() * 1000) 
     };
 
     const imageBlob = await hf.textToImage({
-      model: "stabilityai/stable-diffusion-xl-base-1.0",
+      model: "stabilityai/stable-diffusion-3.5-large",
       inputs: prompt,
       parameters: parameters
     });
