@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>test123</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #111;
+      padding: 2rem;
+      color: #fff;
+      position: relative;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .header p {
+      color: #aaa;
+      font-size: 1.1rem;
+    }
+
+    .card {
+      background: #222;
+      padding: 2rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 1.2rem;
+      border: 2px solid #333;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #333;
+      color: #fff;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: #555;
+    }
+
+    .slider-container {
+      margin: 1.5rem 0;
+    }
+
+    .slider-container label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #fff;
+    }
+
+    #guidanceScale {
+      width: 100%;
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    #guidanceScale::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .generate-btn {
+      width: 100%;
+      padding: 1.2rem;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .generate-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 2rem 0;
+      color: #fff;
+    }
+
+    .error {
+      display: none;
+      padding: 1rem;
+      background: #622;
+      border-radius: 8px;
+      color: #fff;
+      margin: 1rem 0;
+    }
+
+    .image-container {
+      margin-top: 2rem;
+    }
+
+    .image-container img {
+      width: 100%;
+      max-width: 512px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .image-info {
+      text-align: center;
+      margin-top: 1rem;
+      color: #aaa;
+    }
+
+    .profile-pic-container {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .profile-pic-container img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .card {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>სიურრეალიზმი</h1>
+      <p>შექმნილია საბას და სემის მიერ</p>
+    </div>
+
+    <div class="card">
+      <div class="input-group">
+        <input
+          type="text"
+          id="promptInput"
+          placeholder="ჩაწერე რამე..."
+          onkeypress="if(event.key === 'Enter') generateImage()"
+        >
+      </div>
+
+      <div class="slider-container">
+        <label for="guidanceScale">
+          კონტროლის დონე: <span id="guidanceValue">5.5</span>
+        </label>
+        <input
+          type="range"
+          id="guidanceScale"
+          min="1"
+          max="10"
+          step="0.1"
+          value="5.5"
+          oninput="document.getElementById('guidanceValue').textContent = this.value"
+        >
+      </div>
+
+      <button class="generate-btn" onclick="generateImage()" id="generateBtn">
+        შექმენი
+      </button>
+
+      <div class="loading" id="loading">
+         იქმნება... <span id="timer">0s</span>
+      </div>
+
+      <div class="error" id="error"></div>
+
+      <div id="imageContainer" class="image-container"></div>
+    </div>
+  </div>
+
+  <div class="profile-pic-container">
+    <a href="https://www.facebook.com/share/19zVgiGtgn/?mibextid=wwXIfr" target="_blank">
+      <img src="saba.jpeg" alt="Saba's profile picture">
+    </a>
+    <a href="https://youtu.be/2yJgwwDcgV8?feature=shared" target="_blank">
+      <img src="sam.jpeg" alt="Sam's profile picture">
+    </a>
+  </div>
+
+  <script>
+    let lastGenerationTime = 0;
+    let timerInterval;
+    let startTime;
+
+    async function generateImage() {
+      const now = Date.now();
+      const timeSinceLastGeneration = now - lastGenerationTime;
+      const cooldownPeriod = 20000;
+
+      if (timeSinceLastGeneration < cooldownPeriod) {
+        const remainingTime = Math.ceil((cooldownPeriod - timeSinceLastGeneration) / 1000);
+        showError(`დაელოდე ${remainingTime} წამი რომ კიდევ შექმნა ფოტო`);
+        return;
+      }
+
+      const promptInput = document.getElementById('promptInput');
+      const loading = document.getElementById('loading');
+      const error = document.getElementById('error');
+      const imageContainer = document.getElementById('imageContainer');
+      const generateBtn = document.getElementById('generateBtn');
+
+      if (!promptInput.value.trim()) {
+        showError('რამე ჩაწერე ');
+        return;
+      }
+
+      const formattedPrompt = `a detailed image of ${promptInput.value} in the style of surrealism, dreamy, 4k, masterpiece, high quality`;
+
+      loading.style.display = 'block';
+      error.style.display = 'none';
+      imageContainer.innerHTML = '';
+      generateBtn.disabled = true;
+      startTime = Date.now();
+
+      let seconds = 0;
+      timerInterval = setInterval(() => {
+        seconds++;
+        document.getElementById('timer').textContent = `${seconds}s`;
+      }, 1000);
+
+      try {
+        const guidanceScale = parseFloat(document.getElementById('guidanceScale').value);
+
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: formattedPrompt,
+            guidanceScale: guidanceScale,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.images && data.images.length > 0) {
+          const generationTime = ((Date.now() - startTime) / 1000).toFixed(1);
+
+          imageContainer.innerHTML = `
+            <img src="${data.images[0]}" alt="${formattedPrompt}">
+            <div class="image-info">
+              <p>დასჭირდა: ${generationTime}s</p>
+            </div>
+          `;
+
+          lastGenerationTime = Date.now();
+        } else {
+          throw new Error('რავი რაღაცა შეცდომაა');
+        }
+      } catch (err) {
+        showError('შექდომა: ' + err.message);
+      } finally {
+        loading.style.display = 'none';
+        generateBtn.disabled = false;
+        clearInterval(timerInterval);
+      }
+    }
+
+    function showError(message) {
+      const error = document.getElementById('error');
+      error.textContent = message;
+      error.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
