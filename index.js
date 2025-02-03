@@ -13,7 +13,7 @@ app.post('/api/generate', async (req, res) => {
     const { prompt, guidanceScale } = req.body;
 
     const parameters = { 
-      num_inference_steps: 20,
+      num_inference_steps: 25,
       guidance_scale: guidanceScale,
       negative_prompt: "low quality, blurry"
     };
