@@ -152,11 +152,11 @@
     }
 
     .profile-pic-container {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
       display: flex;
       gap: 10px;
+      margin-top: 20px; /* Adds some space between the images and the main content */
+      justify-content: center; /* Center the images */
+      flex-wrap: wrap; /* Ensure the images wrap on smaller screens */
     }
 
     .profile-pic-container img {
@@ -168,6 +168,7 @@
       cursor: pointer;
     }
 
+    /* Media query for smaller screens */
     @media (max-width: 768px) {
       body {
         padding: 1rem;
@@ -179,6 +180,16 @@
 
       .card {
         padding: 1.5rem;
+      }
+
+      .profile-pic-container {
+        justify-content: flex-start; /* Align images to the left on small screens */
+        margin-top: 1rem; /* Reduce the top margin */
+      }
+
+      .profile-pic-container img {
+        width: 50px; /* Reduce the size of images on smaller screens */
+        height: 50px;
       }
     }
   </style>
