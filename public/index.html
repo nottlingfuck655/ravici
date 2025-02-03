@@ -246,7 +246,7 @@
     async function generateImage() {
       const now = Date.now();
       const timeSinceLastGeneration = now - lastGenerationTime;
-      const cooldownPeriod = 20000;
+      const cooldownPeriod = 10000;
 
       if (timeSinceLastGeneration < cooldownPeriod) {
         const remainingTime = Math.ceil((cooldownPeriod - timeSinceLastGeneration) / 1000);
